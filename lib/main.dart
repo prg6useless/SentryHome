@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter/widgets.dart';
 import 'package:sentryhome/auth/auth.dart';
+import 'package:sentryhome/theme/dark_mode.dart';
+import 'package:sentryhome/theme/light_mode.dart';
 import 'firebase_options.dart';
-// import 'pages/login.dart';
-// import 'pages/signup.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,32 +19,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'SentryHome',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
-            ),
-            bottom: const TabBar(
-              indicatorColor: Colors.black,
-              labelColor: Colors.black,
-              tabs: [
-                Tab(text: 'Login'),
-                Tab(text: 'Signup'),
-              ],
-            ),
-          ),
-          body: const TabBarView(
-            children: [
-              // LoginPage(),
-              // SignupPage(),
-              AuthPage()
-            ],
-          ),
-        ),
-      ),
+      home: const AuthPage(),
+      theme: lightMode,
+      darkTheme: darkMode,
     );
   }
 }

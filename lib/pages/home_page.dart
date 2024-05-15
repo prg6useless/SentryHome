@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home"),
-        backgroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 135, 135, 135),
         actions: [
           IconButton(
             onPressed: logout,
