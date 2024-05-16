@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 25),
               // app name
               const Text(
-                "SENTRY HOME",
+                "SENTRY HOME 1.0.0",
                 style: TextStyle(
                   fontSize: 30,
                   // color: Colors.black,
