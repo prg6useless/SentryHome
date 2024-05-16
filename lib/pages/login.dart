@@ -77,28 +77,35 @@ class _LoginPageState extends State<LoginPage> {
               // email
 
               MyTextField(
-                  hintText: "Email",
-                  obscureText: false,
-                  controller: emailController),
+                hintText: "Email",
+                obscureText: false,
+                controller: emailController,
+                prefixIcon: const Icon(Icons.email),
+              ),
 
               //  password
               const SizedBox(height: 10),
 
               MyTextField(
-                  hintText: "Password",
-                  obscureText: true,
-                  controller: passwordController),
+                hintText: "Password",
+                obscureText: true,
+                controller: passwordController,
+                prefixIcon: const Icon(Icons.password),
+              ),
 
               const SizedBox(height: 10),
 
               // forgot passwrod
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "Forgot Password?",
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.inversePrimary),
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
                 ],
               ),

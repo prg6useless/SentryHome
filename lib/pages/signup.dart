@@ -1,3 +1,4 @@
+import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:sentryhome/services/firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
@@ -48,6 +49,10 @@ class _SignupPageState extends State<SignupPage> {
             .createUserWithEmailAndPassword(
                 email: emailController.text, password: passwordController.text);
 
+        // create and add user to firestore
+
+        createUserDocument(userCredential);
+
         // pop loading circle
         if (context.mounted) Navigator.pop(context);
       } on FirebaseAuthException catch (e) {
@@ -56,6 +61,18 @@ class _SignupPageState extends State<SignupPage> {
         // display error msg
         if (context.mounted) displayMessageToUser(e.code, context);
       }
+    }
+  }
+
+  Future<void> createUserDocument(UserCredential? userCredential) async {
+    if (userCredential != null && userCredential.user != null) {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(userCredential.user!.email)
+          .set({
+        "email": userCredential.user!.email,
+        "username": usernameController.text,
+      });
     }
   }
 
@@ -90,43 +107,54 @@ class _SignupPageState extends State<SignupPage> {
               // username
 
               MyTextField(
-                  hintText: "Username",
-                  obscureText: false,
-                  controller: usernameController),
+                hintText: "Username",
+                obscureText: false,
+                controller: usernameController,
+                prefixIcon: const Icon(Icons.person),
+              ),
               // email
               const SizedBox(height: 10),
 
               MyTextField(
-                  hintText: "Email",
-                  obscureText: false,
-                  controller: emailController),
+                hintText: "Email",
+                obscureText: false,
+                controller: emailController,
+                prefixIcon: const Icon(Icons.email),
+              ),
 
               // password
               const SizedBox(height: 10),
 
               MyTextField(
-                  hintText: "Password",
-                  obscureText: true,
-                  controller: passwordController),
+                hintText: "Password",
+                obscureText: true,
+                controller: passwordController,
+                prefixIcon: const Icon(Icons.password),
+              ),
 
               const SizedBox(height: 10),
 
               //  confirm password
               MyTextField(
-                  hintText: "Confirm Password",
-                  obscureText: true,
-                  controller: confirmPWController),
+                hintText: "Confirm Password",
+                obscureText: true,
+                controller: confirmPWController,
+                prefixIcon: const Icon(Icons.password),
+              ),
 
               const SizedBox(height: 10),
 
               // forgot passwrod
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "Forgot Password?",
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.inversePrimary),
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
                 ],
               ),
