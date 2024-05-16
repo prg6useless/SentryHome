@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "656634600387",
+    "project_id": "sentryhome-a95cd",
+    "storage_bucket": "sentryhome-a95cd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:656634600387:android:ddc9eb3a4d64ad0dd2bb76",
+        "android_client_info": {
+          "package_name": "com.example.sentryhome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA606oPTnorCw-AL28tsE9YoU7BabqVOLw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

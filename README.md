@@ -1,16 +1,11 @@
 # sentryhome
 
-A new Flutter project.
+Connect Firebase
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Create new project at console.firebase.google.com
+2. Under Build,select Firestore Database and create database
+3. under Rules, change line 6 to allow read, write: if true;
+4. Follow the instructions at https://firebase.google.com/docs/flutter/setup?platform=ios
+5. flutter pub add cloud_firestore
+6. flutter run
+7. flutter pub add firebase_auth
