@@ -4,7 +4,7 @@ import 'package:sentryhome/auth/auth.dart';
 import 'package:sentryhome/auth/login_or_register.dart';
 import 'package:sentryhome/theme/dark_mode.dart';
 import 'package:sentryhome/theme/light_mode.dart';
-import 'firebase_options.dart';
+//import 'firebase_options.dart';
 import 'pages/home_page.dart';
 import 'pages/notifications_page.dart';
 import 'pages/profile_page.dart';
@@ -12,7 +12,7 @@ import 'pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
