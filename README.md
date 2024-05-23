@@ -10,9 +10,9 @@ SentryHome is a mobile app that creates a comprehensive surveillance system by f
 4. flutter pub add firebase_auth
 5. flutter run
 
-## while pushing
+## While pushing
 
-1. create a new branch in the main repository i.e https://github.com/prg6useless/SentryHome.git and name the branch with your name.
-2. push to forked repository
-3. create a PR and merge it with the branch you created in step 1.
+1. Create a new branch in the main repository i.e https://github.com/prg6useless/SentryHome.git and name the branch with your name.
+2. Push to forked repository
+3. Create a PR and merge it with the branch you created in step 1.
 4. STRICTLY, DO NOT merge with main branch in main repository
