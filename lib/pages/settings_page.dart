@@ -11,7 +11,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _isDarkModeEnabled = false; // Initially set to false (light mode)
-  bool _isMotDetEnabled = false; // Initially set to false (light mode)
+  final _isMotDetEnabled = false; // Initially set to false (light mode)
 
   @override
   Widget build(BuildContext context) {

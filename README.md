@@ -10,3 +10,10 @@ Connect Firebase
 5. flutter pub add cloud_firestore
 6. flutter run
 7. flutter pub add firebase_auth
+
+## While pushing
+
+1. Create a new branch in the main repository i.e https://github.com/prg6useless/SentryHome.git and name the branch with your name.
+2. Push to forked repository
+3. Create a PR and merge it with the branch you created in step 1.
+4. STRICTLY, DO NOT merge with main branch in main repository
