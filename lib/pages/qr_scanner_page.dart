@@ -7,12 +7,8 @@ class QRScannerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define a button style that uses the theme's text style and sets the text color to black
+    // Need to define a button style that uses the theme's text style and sets the text color to black
     final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
-        // textStyle:
-        //     Theme.of(context).textTheme.button?.copyWith(color: Colors.black),
-        // primary: Theme.of(context).colorScheme.primary, // Background color
-        // onPrimary: Colors.black, // Text color
         );
 
     return Scaffold(
