@@ -37,7 +37,6 @@ async def stream(request: Request):
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     return {"message": "Frame received"}
 
-
 def generate_video_stream():
     global frame
     while True:

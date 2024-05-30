@@ -34,7 +34,7 @@ class SelectMode extends StatelessWidget {
                 MyButton(
                     text: "Use as Viewer",
                     onTap: () {
-                      Navigator.pushNamed(context, '/home');
+                      Navigator.pushNamed(context, '/view');
                     })
               ],
             ),
