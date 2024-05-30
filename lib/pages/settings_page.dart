@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-// import '../theme/dark_mode.dart';
-// import '../theme/light_mode.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final bool isDarkModeEnabled;
+  final ValueChanged<bool> onDarkModeChanged;
+
+  const SettingsPage({
+    Key? key,
+    required this.isDarkModeEnabled,
+    required this.onDarkModeChanged,
+  }) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _isDarkModeEnabled = false; // Initially set to false (light mode)
   bool _isMotDetEnabled = false; // Initially set to false (light mode)
 
   @override
@@ -18,62 +22,94 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "S E T T I N G S",
+          "Settings",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Dark Mode"),
-                Switch(
-                  value: _isDarkModeEnabled,
-                  onChanged: _toggleDarkMode,
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Motion Detection"),
-                Switch(
-                  value: _isMotDetEnabled,
-                  onChanged: _toggleMotionDetectionMode,
-                )
-              ],
-            ),
-            // Add other settings here
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Go back to the previous screen
+          },
         ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildSettingsItem(
+            context,
+            icon: Icons.camera_alt,
+            text: "Camera Settings",
+            onTap: () {
+              // Add functionality for Camera Settings if needed
+            },
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.directions_walk,
+            text: "Motion Detection",
+            trailing: Switch(
+              value: _isMotDetEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _isMotDetEnabled = value;
+                });
+              },
+            ),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.play_circle_outline,
+            text: "Playback Settings",
+            onTap: () {
+              // Add functionality for Playback Settings if needed
+            },
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.palette,
+            text: "Toggle Dark Mode",
+            trailing: Switch(
+              value: widget.isDarkModeEnabled,
+              onChanged: widget.onDarkModeChanged,
+            ),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.help_outline,
+            text: "FAQ",
+            onTap: () {
+              // Add functionality for FAQ if needed
+            },
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.info_outline,
+            text: "About",
+            onTap: () {
+              // Add functionality for About if needed
+            },
+          ),
+        ],
       ),
     );
   }
 
-  // this fucntion is not executed
-
-  void _toggleDarkMode(bool newValue) {
-    setState(() {
-      // Update the state of the app
-      // print("Dark mode enabled: $newValue");
-      _isDarkModeEnabled = newValue;
-
-      // Update the theme of the app
-      if (_isDarkModeEnabled) {
-        // Dark mode
-      } else {
-        // Light mode
-      }
-    });
+  Widget _buildSettingsItem(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+    Widget? trailing,
+    void Function()? onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(text),
+      trailing: trailing,
+      onTap: onTap,
+    );
   }
-
-  void _toggleMotionDetectionMode(bool newValue) {}
 }
