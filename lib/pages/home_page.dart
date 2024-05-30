@@ -47,6 +47,12 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dummy data for the cameras
+    final List<Map<String, String>> cameras = [
+      {"name": "Front Door", "location": "Entrance", "status": "Active"},
+      {"name": "Backyard", "location": "Garden", "status": "Inactive"},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
