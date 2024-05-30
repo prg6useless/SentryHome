@@ -15,6 +15,16 @@ class FirestoreService {
     });
   }
 
+  //getuserdetailsfunction
+  Future<DocumentSnapshot> getUserDetails(String email) async {
+    return await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .get();
+  }
+
+  //fetch user details that matchs the email
+
   // READ
   // Stream<QuerySnapshot> getaccountsStream() {
   //   final accountsStream =

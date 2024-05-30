@@ -72,6 +72,7 @@ class _SignupPageState extends State<SignupPage> {
           .set({
         "email": userCredential.user!.email,
         "username": usernameController.text,
+        "firstlogin": true,
       });
     }
   }

@@ -31,6 +31,12 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dummy data for the cameras
+    final List<Map<String, String>> cameras = [
+      {"name": "Front Door", "location": "Entrance", "status": "Active"},
+      {"name": "Backyard", "location": "Garden", "status": "Inactive"},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -54,10 +60,22 @@ class HomePage extends StatelessWidget {
         ],
       ),
       drawer: const MyDrawer(),
-      body: Column(
-        children: [
-          // Add content for the home page here
-        ],
+      body: ListView.builder(
+        itemCount: cameras.length,
+        itemBuilder: (context, index) {
+          final camera = cameras[index];
+          return ListTile(
+            title: Text(camera['name']!),
+            subtitle: Text('Location: ${camera['location']}'),
+            trailing: Text(
+              camera['status']!,
+              style: TextStyle(
+                color: camera['status'] == 'Active' ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
