@@ -43,9 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
             context,
             icon: Icons.camera_alt,
             text: "Camera Settings",
-            onTap: () {
-              // Add functionality for Camera Settings if needed
-            },
+            onTap: () {},
           ),
           _buildSettingsItem(
             context,
@@ -59,14 +57,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 });
               },
             ),
-          ),
-          _buildSettingsItem(
-            context,
-            icon: Icons.play_circle_outline,
-            text: "Playback Settings",
-            onTap: () {
-              // Add functionality for Playback Settings if needed
-            },
           ),
           _buildSettingsItem(
             context,
