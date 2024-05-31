@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/release
 
 /lib/firebase_options.dart
+
+/server/coco.names
+/server/yolov3.cfg
+/server/yolov3.weights
