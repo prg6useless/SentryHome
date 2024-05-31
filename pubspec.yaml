@@ -45,6 +45,7 @@ dependencies:
   image: ^4.2.0
   camera: ^0.11.0
   webview_flutter: ^4.7.0
+  video_player: ^2.8.6
 
 dev_dependencies:
   flutter_test:
