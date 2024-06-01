@@ -69,6 +69,7 @@ def video_feed():
 def get_frame():
     global frame
     frame_with_timestamp = add_timestamp_to_frame(frame.copy())
+    
     _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
     return StreamingResponse(io.BytesIO(encoded_frame.tobytes()), media_type='image/jpg')
 
