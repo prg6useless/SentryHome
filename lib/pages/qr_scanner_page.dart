@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'camera_page.dart';
+import 'package:sentryhome/components/my_button.dart';
 
 
 class QRScannerPage extends StatelessWidget {
@@ -7,10 +7,6 @@ class QRScannerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Need to define a button style that uses the theme's text style and sets the text color to black
-    final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
-        );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -32,32 +28,17 @@ class QRScannerPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Choose what this device will act as",
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: buttonStyle,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CameraPage()),
-                );
-              },
-              child: const Text("As a Camera"),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: buttonStyle,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CameraPage()),
-                );
-              },
-              child: const Text("As a User"),
-            ),
+             MyButton(
+                text: "Use as Camera",
+                onTap: () {
+                  Navigator.pushNamed(context, '/stream');
+                }),
+            const SizedBox(height: 25),
+            MyButton(
+                text: "Use as Viewer",
+                onTap: () {
+                  Navigator.pushNamed(context, '/view');
+                })
           ],
         ),
       ),
