@@ -78,20 +78,6 @@ class MyDrawer extends StatelessWidget {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: ListTile(
-                leading: Icon(Icons.select_all,
-                    color: Theme.of(context).colorScheme.inversePrimary),
-                title: const Text("S E L E C T M O D E"),
-                onTap: () {
-                  //  pop drawer
-                  Navigator.pop(context);
-                  // navigate to profile page
-                  Navigator.pushNamed(context, '/selectmode');
-                },
-              ),
-            ),
           ]),
           // Logout
           Padding(

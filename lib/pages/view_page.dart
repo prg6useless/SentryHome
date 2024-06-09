@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+//import 'package:video_player/video_player.dart';
 
 class VideoFeedPage extends StatefulWidget {
   @override
@@ -9,33 +10,30 @@ class VideoFeedPage extends StatefulWidget {
 }
 
 class _VideoFeedPageState extends State<VideoFeedPage> {
-  Uint8List? _currentFrame;
-  Timer? _timer;
+  late Uint8List _imageBytes;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    // Start a timer to fetch video frames at regular intervals
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      fetchVideoFrame();
+    _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
+      _fetchFrame();
     });
   }
 
-  void fetchVideoFrame() async {
-    try {
-      // Make an HTTP GET request to fetch the video frame
-      var response =
-          await http.get(Uri.parse('http://192.168.1.69:8000/video_feed'));
-      if (response.statusCode == 200) {
-        setState(() {
-          // Update the UI with the received video frame
-          _currentFrame = response.bodyBytes;
-        });
-      } else {
-        print('Failed to fetch video frame: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching video frame: $e');
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchFrame() async {
+    final response = await http.get(Uri.parse(
+        'http://192.168.1.69:8000/frame')); // Replace 'YOUR_ENDPOINT_HERE' with your actual endpoint
+    if (response.statusCode == 200) {
+      setState(() {
+        _imageBytes = response.bodyBytes;
+      });
     }
   }
 
@@ -43,30 +41,97 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Video Feed'),
+        title: Text('Video Stream'),
       ),
       body: Center(
-        child: _currentFrame != null
-            ? Image.memory(
-                _currentFrame!,
-                fit: BoxFit.contain,
-              )
-            : CircularProgressIndicator(), // Show loading indicator if frame not received yet
+        child: _imageBytes != null
+            ? Image.memory(_imageBytes)
+            : CircularProgressIndicator(),
       ),
     );
   }
-
-  @override
-  void dispose() {
-    // Cancel the timer to prevent memory leaks
-    _timer!.cancel();
-    super.dispose();
-  }
 }
 
-void main() {
-  runApp(MaterialApp(
-    title: 'Video Feed App',
-    home: VideoFeedPage(),
-  ));
-}
+// import 'dart:async';
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+
+// class VideoFeedPage extends StatefulWidget {
+//   @override
+//   _VideoFeedPageState createState() => _VideoFeedPageState();
+// }
+
+// class _VideoFeedPageState extends State<VideoFeedPage> {
+//   Uint8List? _imageBytes;
+//   late Timer _timer;
+//   String? _deviceIp;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _getDeviceIp().then((ip) {
+//       if (ip != null) {
+//         setState(() {
+//           _deviceIp = ip;
+//         });
+//         _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
+//           _fetchFrame();
+//         });
+//       } else {
+//         print("Failed to get IP address.");
+//       }
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _timer.cancel();
+//     super.dispose();
+//   }
+
+//   Future<String?> _getDeviceIp() async {
+//     try {
+//       final List<NetworkInterface> interfaces = await NetworkInterface.list(
+//         type: InternetAddressType.IPv4,
+//         includeLoopback: false,
+//       );
+//       for (var interface in interfaces) {
+//         for (var address in interface.addresses) {
+//           if (address.address.startsWith('192.168.')) {
+//             // Assuming local network IP
+//             return address.address;
+//           }
+//         }
+//       }
+//     } catch (e) {
+//       print("Failed to get IP address: $e");
+//     }
+//     return null;
+//   }
+
+//   Future<void> _fetchFrame() async {
+//     if (_deviceIp == null) return;
+//     final response = await http.get(Uri.parse('http://$_deviceIp:8000/frame'));
+//     if (response.statusCode == 200) {
+//       setState(() {
+//         _imageBytes = response.bodyBytes;
+//       });
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Video Stream'),
+//       ),
+//       body: Center(
+//         child: _imageBytes != null
+//             ? Image.memory(_imageBytes!)
+//             : CircularProgressIndicator(),
+//       ),
+//     );
+//   }
+// }
