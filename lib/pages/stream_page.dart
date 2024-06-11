@@ -15,17 +15,11 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isStreaming = false;
-  String? _deviceIp;
 
   @override
   void initState() {
     super.initState();
     _initializeCamera();
-    _getDeviceIp().then((ip) {
-      setState(() {
-        _deviceIp = ip;
-      });
-    });
   }
 
   Future<void> _initializeCamera() async {
@@ -38,7 +32,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   void _startStreaming() {
     if (_controller != null && _controller!.value.isInitialized) {
       _controller!.startImageStream((CameraImage image) async {
-        if (!_isStreaming && _deviceIp != null) {
+        if (!_isStreaming) {
           _isStreaming = true;
           await _sendFrame(image);
           _isStreaming = false;
@@ -56,26 +50,6 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
     }
   }
 
-  Future<String?> _getDeviceIp() async {
-    try {
-      final List<NetworkInterface> interfaces = await NetworkInterface.list(
-        type: InternetAddressType.IPv4,
-        includeLoopback: false,
-      );
-      for (var interface in interfaces) {
-        for (var address in interface.addresses) {
-          if (address.address.startsWith('192.168.')) {
-            // Assuming local network IP
-            return address.address;
-          }
-        }
-      }
-    } catch (e) {
-      print("Failed to get IP address: $e");
-    }
-    return null;
-  }
-
   Future<void> _sendFrame(CameraImage image) async {
     try {
       // Convert CameraImage to image package's Image
@@ -85,7 +59,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
       // Convert to Uint8List
       final Uint8List jpegUint8List = Uint8List.fromList(jpegBytes);
 
-      final uri = Uri.parse('http://192.168.101.3:8000/stream');
+      final uri = Uri.parse('http://192.168.1.69:8000/stream');
       await http.post(uri, body: jpegUint8List);
     } catch (e) {
       print('Error sending frame: $e');
@@ -133,8 +107,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   }
 
   Future<void> _test() async {
-    if (_deviceIp == null) return;
-    final uri = Uri.parse('http://192.168.101.3:8000/');
+    final uri = Uri.parse('http://192.168.1.69:8000/');
     final response = await http.get(uri);
     print(response.body);
   }

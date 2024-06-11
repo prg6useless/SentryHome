@@ -66,7 +66,7 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
 // class _VideoFeedPageState extends State<VideoFeedPage> {
 //   Uint8List? _imageBytes;
 //   late Timer _timer;
-//   String? _deviceIp;
+//   String? 192.168.1.69;
 
 //   @override
 //   void initState() {
@@ -74,7 +74,7 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
 //     _getDeviceIp().then((ip) {
 //       if (ip != null) {
 //         setState(() {
-//           _deviceIp = ip;
+//           192.168.1.69 = ip;
 //         });
 //         _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
 //           _fetchFrame();
@@ -112,8 +112,8 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
 //   }
 
 //   Future<void> _fetchFrame() async {
-//     if (_deviceIp == null) return;
-//     final response = await http.get(Uri.parse('http://$_deviceIp:8000/frame'));
+//     if (192.168.1.69 == null) return;
+//     final response = await http.get(Uri.parse('http://$192.168.1.69:8000/frame'));
 //     if (response.statusCode == 200) {
 //       setState(() {
 //         _imageBytes = response.bodyBytes;
