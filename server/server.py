@@ -11,6 +11,9 @@ from datetime import datetime
 app = FastAPI()
 
 frame = None
+video_writer = None
+output_filename = 'output_video.mp4'
+video_writer_initialized = False
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,10 +31,24 @@ def read_root():
 
 @app.post("/stream")
 async def stream(request: Request):
-    global frame
+    global frame, video_writer, video_writer_initialized
+
     contents = await request.body()
     nparr = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    if frame is not None:
+        # Initialize video writer if it's not yet initialized
+        if not video_writer_initialized:
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for mp4
+            frame_height, frame_width = frame.shape[:2]
+            video_writer = cv2.VideoWriter(
+                output_filename, fourcc, 15.0, (frame_width, frame_height))
+            video_writer_initialized = True
+
+        # Write the current frame to the video file
+        video_writer.write(frame)
+
     return {"message": "Frame received"}
 
 
@@ -68,10 +85,12 @@ def video_feed():
 @app.get("/frame")
 def get_frame():
     global frame
-    frame_with_timestamp = add_timestamp_to_frame(frame.copy())
-    
-    _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
-    return StreamingResponse(io.BytesIO(encoded_frame.tobytes()), media_type='image/jpg')
+    if frame is not None:
+        frame_with_timestamp = add_timestamp_to_frame(frame.copy())
+        _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
+        return StreamingResponse(io.BytesIO(encoded_frame.tobytes()), media_type='image/jpg')
+    else:
+        return HTMLResponse(content="<h1>No Frame Received</h1>", status_code=200)
 
 
 @app.get("/view")
@@ -88,3 +107,12 @@ def view():
     </html>
     """
     return HTMLResponse(content=html_content)
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    global video_writer
+    if video_writer is not None:
+        video_writer.release()
+
+# Run the FastAPI app with the command `uvicorn yourfilename:app --reload`
