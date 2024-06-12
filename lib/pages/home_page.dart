@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sentryhome/components/my_drawer.dart';
 import 'package:sentryhome/pages/qr_scanner_page.dart';
+import 'package:sentryhome/pages/view_recordings.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<String> videoList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVideoList();
+  }
+
+  Future<void> fetchVideoList() async {
+    final ListResult result = await FirebaseStorage.instance.ref().list();
+    setState(() {
+      videoList = result.items.map((item) => item.name).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Dummy data for the cameras
-    // final List<Map<String, String>> cameras = [
-    //   {"name": "Front Door", "location": "Entrance", "status": "Active"},
-    //   {"name": "Backyard", "location": "Garden", "status": "Inactive"},
-    // ];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -62,10 +78,7 @@ class HomePage extends StatelessWidget {
 
   Widget _buildLiveViewList() {
     final liveViews = [
-      {"name": "Camera 01", "time": "12:00:00", "status": "red"},
-      {"name": "Camera 02", "time": "07:20:30", "status": "green"},
-      {"name": "Camera 03", "time": "11:46:22", "status": "green"},
-      {"name": "Camera 04", "time": "12:00:00", "status": "red"},
+      {"name": "Camera 01", "time": "12:00:00", "status": "green"},
     ];
 
     return Column(
@@ -77,35 +90,38 @@ class HomePage extends StatelessWidget {
             color: Colors.black,
           ),
           title: Text(liveView['name']!),
-          subtitle: Text(liveView['time']!),
+          // subtitle: Text(liveView['time']!),
           trailing: Icon(
             Icons.circle,
             color: liveView['status'] == "red" ? Colors.red : Colors.green,
             size: 14,
           ),
+          onTap: () {
+            Navigator.pushNamed(context, '/view');
+          },
         );
       }).toList(),
     );
   }
 
   Widget _buildPlaybackRecordingsList() {
-    final playbackRecordings = [
-      {"name": "Recording 01", "time": "15:00:00", "date": "12-02-2022"},
-      {"name": "Recording 02", "time": "16:10:00", "date": "18-12-2022"},
-      {"name": "Recording 03", "time": "03:50:40", "date": "22-07-2023"},
-      {"name": "Recording 04", "time": "05:10:55", "date": "17-08-2023"},
-    ];
-
     return Column(
-      children: playbackRecordings.map((recording) {
+      children: videoList.map((videoName) {
         return ListTile(
           leading: Container(
             width: 50,
             height: 50,
             color: Colors.black,
           ),
-          title: Text(recording['name']!),
-          subtitle: Text("${recording['time']} ${recording['date']}"),
+          title: Text(videoName),
+          subtitle: Text("Video"),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VideoPlayerPage(videoName: videoName)),
+            );
+          },
         );
       }).toList(),
     );

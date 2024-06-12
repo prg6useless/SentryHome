@@ -1,4 +1,3 @@
-from typing import Union
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import StreamingResponse, HTMLResponse
 import io
@@ -9,6 +8,9 @@ import asyncio
 from datetime import datetime
 from ultralytics import YOLOv10
 import supervision as sv
+import firebase_admin
+from firebase_admin import credentials, storage
+import os
 
 app = FastAPI()
 
@@ -47,6 +49,14 @@ category_dict = {
     77: 'teddy bear', 78: 'hair drier', 79: 'toothbrush'
 }
 
+# Initialize Firebase Admin SDK
+# Path to your downloaded JSON key file
+cred = credentials.Certificate("serviceAccountkey.json")
+firebase_admin.initialize_app(cred, {
+    # Replace with your Firebase project ID
+    'storageBucket': 'sentryhome-a95cd.appspot.com'
+})
+
 
 def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
     results = model(source=image, conf=0.25, verbose=False)[0]
@@ -67,17 +77,8 @@ def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
 def read_root():
     return {"Hello": "World"}
 
-# async def process_frame(contents: bytes):
-#     global frame
-#     nparr = np.frombuffer(contents, np.uint8)
-#     decoded_frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-#     frame = decoded_frame
-
 
 @app.post("/stream")
-<< << << < HEAD
-
-
 async def stream(request: Request, background_tasks: BackgroundTasks):
     global frame, video_writer, video_writer_initialized
 
@@ -92,24 +93,13 @@ async def stream(request: Request, background_tasks: BackgroundTasks):
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for mp4
             frame_height, frame_width = frame.shape[:2]
             video_writer = cv2.VideoWriter(
-                output_filename, fourcc, 15.0, (frame_width, frame_height))
+                output_filename, fourcc, 5.0, (frame_width, frame_height))
             video_writer_initialized = True
 
         # Write the current frame to the video file
         video_writer.write(frame)
 
-== == == =
-
-
-async def stream(request: Request, background_tasks: BackgroundTasks):
-    global frame
-    contents = await request.body()
-    nparr = np.frombuffer(contents, np.uint8)
-    decoded_frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    annotated_frame = process_frame_with_detection(decoded_frame)
-    frame = annotated_frame
->>>>>> > 74a7f7a318596ca34bf4c351af92edf2cd0a68b3
-return {"message": "Frame received"}
+    return {"message": "Frame received"}
 
 
 def add_timestamp_to_frame(frame: np.ndarray) -> np.ndarray:
@@ -171,8 +161,16 @@ def view():
 
 @app.on_event("shutdown")
 def shutdown_event():
-    global video_writer
+    global video_writer, output_filename
     if video_writer is not None:
         video_writer.release()
-
-# Run the FastAPI app with the command `uvicorn yourfilename:app --reload`
+        # Create a new filename with timestamp
+        timestamped_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{
+            output_filename}"
+        # Upload to Firebase Storage
+        bucket = storage.bucket()
+        blob = bucket.blob(os.path.basename(timestamped_filename))
+        blob.upload_from_filename(output_filename)
+        blob.make_public()
+        print(f"Uploaded {output_filename} to Firebase Storage as {
+              timestamped_filename}")

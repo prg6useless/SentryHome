@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-//import 'package:video_player/video_player.dart';
 
 class VideoFeedPage extends StatefulWidget {
   @override
@@ -12,6 +11,7 @@ class VideoFeedPage extends StatefulWidget {
 class _VideoFeedPageState extends State<VideoFeedPage> {
   late Uint8List _imageBytes;
   late Timer _timer;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -28,11 +28,22 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
   }
 
   Future<void> _fetchFrame() async {
-    final response = await http.get(Uri.parse(
-        'http://192.168.101.3:8000/frame')); // Replace 'YOUR_ENDPOINT_HERE' with your actual endpoint
-    if (response.statusCode == 200) {
+    try {
+      final response =
+          await http.get(Uri.parse('http://192.168.101.3:8000/frame'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _imageBytes = response.bodyBytes;
+          _isError = false;
+        });
+      } else {
+        setState(() {
+          _isError = true;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _imageBytes = response.bodyBytes;
+        _isError = true;
       });
     }
   }
@@ -44,94 +55,15 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
         title: Text('Video Stream'),
       ),
       body: Center(
-        child: _imageBytes != null
-            ? Image.memory(_imageBytes)
-            : CircularProgressIndicator(),
+        child: _isError
+            ? Text(
+                'No Feed',
+                style: TextStyle(fontSize: 24.0),
+              )
+            : _imageBytes != null
+                ? Image.memory(_imageBytes)
+                : CircularProgressIndicator(),
       ),
     );
   }
 }
-
-// import 'dart:async';
-// import 'dart:io';
-// import 'dart:typed_data';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-
-// class VideoFeedPage extends StatefulWidget {
-//   @override
-//   _VideoFeedPageState createState() => _VideoFeedPageState();
-// }
-
-// class _VideoFeedPageState extends State<VideoFeedPage> {
-//   Uint8List? _imageBytes;
-//   late Timer _timer;
-//   String? 192.168.1.69;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _getDeviceIp().then((ip) {
-//       if (ip != null) {
-//         setState(() {
-//           192.168.1.69 = ip;
-//         });
-//         _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
-//           _fetchFrame();
-//         });
-//       } else {
-//         print("Failed to get IP address.");
-//       }
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _timer.cancel();
-//     super.dispose();
-//   }
-
-//   Future<String?> _getDeviceIp() async {
-//     try {
-//       final List<NetworkInterface> interfaces = await NetworkInterface.list(
-//         type: InternetAddressType.IPv4,
-//         includeLoopback: false,
-//       );
-//       for (var interface in interfaces) {
-//         for (var address in interface.addresses) {
-//           if (address.address.startsWith('192.168.')) {
-//             // Assuming local network IP
-//             return address.address;
-//           }
-//         }
-//       }
-//     } catch (e) {
-//       print("Failed to get IP address: $e");
-//     }
-//     return null;
-//   }
-
-//   Future<void> _fetchFrame() async {
-//     if (192.168.1.69 == null) return;
-//     final response = await http.get(Uri.parse('http://$192.168.1.69:8000/frame'));
-//     if (response.statusCode == 200) {
-//       setState(() {
-//         _imageBytes = response.bodyBytes;
-//       });
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Video Stream'),
-//       ),
-//       body: Center(
-//         child: _imageBytes != null
-//             ? Image.memory(_imageBytes!)
-//             : CircularProgressIndicator(),
-//       ),
-//     );
-//   }
-// }
