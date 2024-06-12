@@ -17,3 +17,7 @@ Connect Firebase
 2. Push to forked repository
 3. Create a PR and merge it with the branch you created in step 1.
 4. STRICTLY, DO NOT merge with main branch in main repository
+
+5. pip install ultralytics
+6. pip install supervision
+7. pip install supervision git+https://github.com/THU-MIG/yolov10.git

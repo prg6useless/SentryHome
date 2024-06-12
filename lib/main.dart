@@ -4,6 +4,7 @@ import 'package:sentryhome/auth/auth.dart';
 import 'package:sentryhome/auth/login_or_register.dart';
 import 'package:sentryhome/pages/stream_page.dart';
 import 'package:sentryhome/pages/view_page.dart';
+import 'package:sentryhome/pages/view_recordings.dart';
 import 'package:sentryhome/theme/dark_mode.dart';
 import 'package:sentryhome/theme/light_mode.dart';
 import 'firebase_options.dart';
@@ -57,6 +58,7 @@ class _MyAppState extends State<MyApp> {
         "/view": (context) => VideoFeedPage(),
         '/qrscanner': (context) => const QRScannerPage(),
         '/camera': (context) => const CameraPage(),
+        '/viewrecordings': (context) => const VideoPlayerPage(videoName: "")
       },
     );
   }
