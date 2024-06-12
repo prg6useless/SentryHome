@@ -61,15 +61,16 @@ firebase_admin.initialize_app(cred, {
 def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
     results = model(source=image, conf=0.25, verbose=False)[0]
     detections = sv.Detections.from_ultralytics(results)
-    box_annotator = sv.BoxAnnotator()
+    # New annotator classes
+    bounding_box_annotator = sv.BoundingBoxAnnotator()
+    label_annotator = sv.LabelAnnotator()
 
     labels = [
         f"{category_dict[class_id]} {confidence:.2f}"
         for class_id, confidence in zip(detections.class_id, detections.confidence)
     ]
-    annotated_image = box_annotator.annotate(
-        image.copy(), detections=detections, labels=labels
-    )
+    annotated_image = bounding_box_annotator.annotate(image.copy(), detections=detections)
+    annotated_image = label_annotator.annotate(annotated_image, detections=detections, labels=labels)
     return annotated_image
 
 

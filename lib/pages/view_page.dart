@@ -30,7 +30,7 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
   Future<void> _fetchFrame() async {
     try {
       final response =
-          await http.get(Uri.parse('http://192.168.101.3:8000/frame'));
+          await http.get(Uri.parse('http://192.168.101.4:8000/frame'));
       if (response.statusCode == 200) {
         setState(() {
           _imageBytes = response.bodyBytes;
