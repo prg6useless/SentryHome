@@ -59,7 +59,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
       // Convert to Uint8List
       final Uint8List jpegUint8List = Uint8List.fromList(jpegBytes);
 
-      final uri = Uri.parse('http://192.168.1.69:8000/stream');
+      final uri = Uri.parse('http://192.168.101.4:8000/stream');
       await http.post(uri, body: jpegUint8List);
     } catch (e) {
       print('Error sending frame: $e');
@@ -107,7 +107,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   }
 
   Future<void> _test() async {
-    final uri = Uri.parse('http://192.168.1.69:8000/');
+    final uri = Uri.parse('http://192.168.101.4:8000/');
     final response = await http.get(uri);
     print(response.body);
   }
@@ -122,19 +122,27 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
+          FloatingActionButton.extended(
             onPressed: _startStreaming,
-            child: Icon(Icons.videocam),
+            icon: const Icon(Icons.videocam),
+            label: const Text('Start Streaming',
+                style: TextStyle(color: Colors.black)),
+            foregroundColor: Colors.black,
           ),
           SizedBox(height: 10),
-          FloatingActionButton(
+          FloatingActionButton.extended(
             onPressed: _stopStreaming,
-            child: Icon(Icons.stop),
+            icon: const Icon(Icons.stop),
+            label: const Text('Stop Streaming',
+                style: TextStyle(color: Colors.black)),
+            foregroundColor: Colors.black,
           ),
           SizedBox(height: 10),
-          FloatingActionButton(
+          FloatingActionButton.extended(
             onPressed: _test,
-            child: Icon(Icons.portable_wifi_off_outlined),
+            icon: const Icon(Icons.portable_wifi_off_outlined),
+            label: const Text('Test', style: TextStyle(color: Colors.black)),
+            foregroundColor: Colors.black,
           ),
         ],
       ),

@@ -49,3 +49,4 @@ app.*.map.json
 /server/yolov3.weights
 
 /server/serviceAccountKey.json
+/server/output_video.mp4

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkModeEnabled;
@@ -16,6 +18,39 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _isMotDetEnabled = false; // Initially set to false (light mode)
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMotionDetectionSetting();
+  }
+
+  Future<void> _fetchMotionDetectionSetting() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.email)
+          .get();
+      if (userDoc.exists) {
+        setState(() {
+          _isMotDetEnabled = userDoc.data()?['motionDetectionEnabled'] ?? false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateMotionDetectionSetting(bool isEnabled) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.email)
+          .update({
+        'motionDetectionEnabled': isEnabled,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() {
                   _isMotDetEnabled = value;
                 });
+                _updateMotionDetectionSetting(value);
               },
             ),
           ),
