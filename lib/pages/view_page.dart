@@ -38,8 +38,8 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
   Future<void> _fetchFrame() async {
 
     try {
-      final response = await _httpClient.get(Uri.parse(
-          'http://192.168.1.94:8000/frame')); // Replace with your actual endpoint
+      final response =
+          await http.get(Uri.parse('http://192.168.101.4:8000/frame'));
       if (response.statusCode == 200) {
         setState(() {
           if (_frameBuffer.length < _bufferSize) {

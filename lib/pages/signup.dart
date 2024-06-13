@@ -73,6 +73,7 @@ class _SignupPageState extends State<SignupPage> {
         "email": userCredential.user!.email,
         "username": usernameController.text,
         "firstlogin": true,
+        "motionDetectionEnabled": true, // Set initial value to true
       });
     }
   }
