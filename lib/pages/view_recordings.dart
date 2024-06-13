@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:sentryhome/components/my_drawer.dart';
-import 'package:sentryhome/pages/qr_scanner_page.dart';
+// import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:sentryhome/components/my_drawer.dart';
+// import 'package:sentryhome/pages/qr_scanner_page.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoName;
-  const VideoPlayerPage({Key? key, required this.videoName}) : super(key: key);
+  const VideoPlayerPage({super.key, required this.videoName});
 
   @override
   _VideoPlayerPageState createState() => _VideoPlayerPageState();
