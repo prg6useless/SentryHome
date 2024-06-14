@@ -18,6 +18,7 @@ frame = None
 video_writer = None
 output_filename = 'output_video.mp4'
 video_writer_initialized = False
+frame_buffer = asyncio.Queue(maxsize=10)  # Buffer to store frames
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,10 +51,8 @@ category_dict = {
 }
 
 # Initialize Firebase Admin SDK
-# Path to your downloaded JSON key file
 cred = credentials.Certificate("serviceAccountkey.json")
 firebase_admin.initialize_app(cred, {
-    # Replace with your Firebase project ID
     'storageBucket': 'sentryhome-a95cd.appspot.com'
 })
 
@@ -88,17 +87,21 @@ async def stream(request: Request, background_tasks: BackgroundTasks):
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     annotated_frame = process_frame_with_detection(frame)
     frame = annotated_frame
+
     if frame is not None:
-        # Initialize video writer if it's not yet initialized
         if not video_writer_initialized:
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for mp4
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             frame_height, frame_width = frame.shape[:2]
             video_writer = cv2.VideoWriter(
                 output_filename, fourcc, 5.0, (frame_width, frame_height))
             video_writer_initialized = True
 
-        # Write the current frame to the video file
         video_writer.write(frame)
+
+        try:
+            frame_buffer.put_nowait(frame)
+        except asyncio.QueueFull:
+            pass  # Drop the frame if the buffer is full
 
     return {"message": "Frame received"}
 
@@ -110,22 +113,14 @@ def add_timestamp_to_frame(frame: np.ndarray) -> np.ndarray:
     return frame
 
 
-def generate_video_stream():
-    global frame
+async def generate_video_stream():
+    global frame_buffer
     while True:
-        if frame is not None:
-            frame_with_timestamp = add_timestamp_to_frame(frame.copy())
-            _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame.tobytes() + b'\r\n')
-        else:
-            # Send a red frame if no frame is available
-            red_frame = np.zeros((480, 640, 3), dtype=np.uint8)
-            red_frame[:] = (0, 0, 255)  # Red color in BGR
-            frame_with_timestamp = add_timestamp_to_frame(red_frame)
-            _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame.tobytes() + b'\r\n')
+        frame = await frame_buffer.get()
+        frame_with_timestamp = add_timestamp_to_frame(frame.copy())
+        _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame.tobytes() + b'\r\n')
 
 
 @app.get("/video_feed")
@@ -165,13 +160,9 @@ def shutdown_event():
     global video_writer, output_filename
     if video_writer is not None:
         video_writer.release()
-        # Create a new filename with timestamp
-        timestamped_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{
-            output_filename}"
-        # Upload to Firebase Storage
+        timestamped_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{output_filename}"
         bucket = storage.bucket()
         blob = bucket.blob(os.path.basename(timestamped_filename))
         blob.upload_from_filename(output_filename)
         blob.make_public()
-        print(f"Uploaded {output_filename} to Firebase Storage as {
-              timestamped_filename}")
+        print(f"Uploaded {output_filename} to Firebase Storage as {timestamped_filename}")

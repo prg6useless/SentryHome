@@ -9,60 +9,77 @@ class VideoFeedPage extends StatefulWidget {
 }
 
 class _VideoFeedPageState extends State<VideoFeedPage> {
-  late Uint8List _imageBytes;
-  late Timer _timer;
-  bool _isError = false;
+  Uint8List? _imageBytes;
+  late Timer _fetchTimer;
+  late Timer _playbackTimer;
+  late http.Client _httpClient;
+  List<Uint8List> _frameBuffer = [];
+  int _bufferSize = 100; // Increased buffer size for smoother playback
+  int _currentFrameIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
+    _httpClient = http.Client();
+    _fetchTimer = Timer.periodic(const Duration(milliseconds: 120), (_) {
       _fetchFrame();
     });
+    _startPlayback();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _fetchTimer.cancel();
+    _playbackTimer.cancel();
+    _httpClient.close();
     super.dispose();
   }
 
   Future<void> _fetchFrame() async {
+
     try {
       final response =
           await http.get(Uri.parse('http://192.168.1.69:8000/frame'));
       if (response.statusCode == 200) {
         setState(() {
-          _imageBytes = response.bodyBytes;
-          _isError = false;
+          if (_frameBuffer.length < _bufferSize) {
+            _frameBuffer.add(response.bodyBytes);
+          }
         });
       } else {
-        setState(() {
-          _isError = true;
-        });
+        // Handle error
+        //print('Error fetching frame: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() {
-        _isError = true;
-      });
+      //print('Error fetching frame: $e');
     }
+  }
+
+  void _startPlayback() {
+    _playbackTimer = Timer.periodic(const Duration(milliseconds: 45), (timer) {
+      //fps counter
+      if (_frameBuffer.isNotEmpty) {
+        setState(() {
+          _imageBytes = _frameBuffer[_currentFrameIndex];
+          _currentFrameIndex = (_currentFrameIndex + 1) % _frameBuffer.length;
+          if (_frameBuffer.length == _bufferSize) {
+            _frameBuffer.removeAt(0);
+          }
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Video Stream'),
+        title: const Text('Video Stream'),
       ),
       body: Center(
-        child: _isError
-            ? Text(
-                'No Feed',
-                style: TextStyle(fontSize: 24.0),
-              )
-            : _imageBytes != null
-                ? Image.memory(_imageBytes)
-                : CircularProgressIndicator(),
+        child: _imageBytes != null
+            ? Image.memory(_imageBytes!)
+            : const CircularProgressIndicator(),
       ),
     );
   }
