@@ -39,7 +39,7 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
 
     try {
       final response =
-          await http.get(Uri.parse('http://192.168.101.4:8000/frame'));
+          await http.get(Uri.parse('http://192.168.1.69:8000/frame'));
       if (response.statusCode == 200) {
         setState(() {
           if (_frameBuffer.length < _bufferSize) {

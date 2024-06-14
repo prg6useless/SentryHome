@@ -64,7 +64,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
       // Convert to Uint8List
       final Uint8List jpegUint8List = Uint8List.fromList(jpegBytes);
 
-      final uri = Uri.parse('http://192.168.101.4:8000/stream');
+      final uri = Uri.parse('http://192.168.1.69:8000/stream');
       await http.post(uri, body: jpegUint8List);
     } catch (e) {
       print('Error sending frame: $e');
@@ -108,7 +108,7 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   }
 
   Future<void> _test() async {
-    final uri = Uri.parse('http://192.168.101.4:8000/');
+    final uri = Uri.parse('http://192.168.1.69:8000/');
     final response = await http.get(uri);
     print(response.body);
   }
