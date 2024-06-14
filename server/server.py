@@ -1,3 +1,4 @@
+from io import BytesIO
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import StreamingResponse, HTMLResponse
 import io
@@ -9,8 +10,10 @@ from datetime import datetime
 from ultralytics import YOLOv10
 import supervision as sv
 import firebase_admin
-from firebase_admin import credentials, storage
+from firebase_admin import credentials, storage, firestore
 import os
+from io import BytesIO
+import uuid
 
 app = FastAPI()
 
@@ -57,11 +60,47 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': 'sentryhome-a95cd.appspot.com'
 })
 
+db = firestore.client()
+
+
+def save_detection_event(class_id, confidence, frame):
+    if class_id in [0, 3, 7]:  # person, motorcycle, truck
+        timestamp = datetime.now().isoformat()
+        # Generate a unique ID for the event and image
+        unique_id = str(uuid.uuid4())
+
+        # Create a filename for the image
+        image_filename = f"detection_{unique_id}.jpg"
+
+        # Convert the frame to a byte stream
+        _, image_encoded = cv2.imencode('.jpg', frame)
+        image_stream = BytesIO(image_encoded)
+
+        # Upload the image to Firebase Storage in the specified subdirectory
+        bucket = storage.bucket()
+        blob = bucket.blob(f'detection_images/{image_filename}')
+        blob.upload_from_file(image_stream, content_type='image/jpeg')
+        blob.make_public()  # Make the image public
+
+        # Get the public URL of the image
+        image_url = blob.public_url
+
+        # Event data to save in Firestore
+        event_data = {
+            'object': category_dict[class_id],
+            'timestamp': timestamp,
+            'image_url': image_url
+        }
+
+        # Save the event to Firestore with a unique ID
+        print(event_data)
+        db.collection('detection_events').document(unique_id).set(event_data)
+        print(f"Saved event: {event_data} with ID {unique_id}")
+
 
 def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
     results = model(source=image, conf=0.25, verbose=False)[0]
     detections = sv.Detections.from_ultralytics(results)
-    # New annotator classes
     bounding_box_annotator = sv.BoundingBoxAnnotator()
     label_annotator = sv.LabelAnnotator()
 
@@ -69,8 +108,16 @@ def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
         f"{category_dict[class_id]} {confidence:.2f}"
         for class_id, confidence in zip(detections.class_id, detections.confidence)
     ]
-    annotated_image = bounding_box_annotator.annotate(image.copy(), detections=detections)
-    annotated_image = label_annotator.annotate(annotated_image, detections=detections, labels=labels)
+
+    # Log detection events and upload image to Firebase Storage
+    for class_id, confidence in zip(detections.class_id, detections.confidence):
+        # Pass image to save the annotated frame
+        save_detection_event(class_id, confidence, image)
+
+    annotated_image = bounding_box_annotator.annotate(
+        image.copy(), detections=detections)
+    annotated_image = label_annotator.annotate(
+        annotated_image, detections=detections, labels=labels)
     return annotated_image
 
 
