@@ -17,7 +17,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _isMotDetEnabled = false; // Initially set to false (light mode)
+  bool _isMotDetEnabled = false;
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+  final TextEditingController _ipController = TextEditingController();
 
   @override
   void initState() {
@@ -52,6 +54,15 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _updateUserIpAddress(String ipAddress) async {
+    if (currentUser != null) {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(currentUser!.email)
+          .update({"ipAddress": ipAddress});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsItem(
             context,
             icon: Icons.directions_walk,
-            text: "Motion Detection",
+            text: "Object Detection",
             trailing: Switch(
               value: _isMotDetEnabled,
               onChanged: (value) {
@@ -119,6 +130,43 @@ class _SettingsPageState extends State<SettingsPage> {
               // Add functionality for About if needed
             },
           ),
+          _buildSettingsItem(context,
+              icon: Icons.edit, text: "Configure IP Address", onTap: () {
+            // Display a dialog to enter the IP address and submit button
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text("Enter the IP Address of the server"),
+                  content: TextField(
+                    controller: _ipController,
+                    decoration:
+                        const InputDecoration(hintText: "Enter the IP Address"),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel",
+                          style: TextStyle(color: Colors.red)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        String ipAddress = _ipController.text;
+                        if (ipAddress.isNotEmpty) {
+                          _updateUserIpAddress(ipAddress);
+                        }
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Submit",
+                          style: TextStyle(color: Colors.blue)),
+                    ),
+                  ],
+                );
+              },
+            );
+          }),
         ],
       ),
     );
