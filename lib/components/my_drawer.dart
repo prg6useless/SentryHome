@@ -50,6 +50,7 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
             // users
+
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: ListTile(
@@ -61,6 +62,20 @@ class MyDrawer extends StatelessWidget {
                   Navigator.pop(context);
                   // navigate to profile page
                   Navigator.pushNamed(context, '/notifications');
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: ListTile(
+                leading: Icon(Icons.camera,
+                    color: Theme.of(context).colorScheme.inversePrimary),
+                title: const Text("S T R E A M"),
+                onTap: () {
+                  //  pop drawer
+                  Navigator.pop(context);
+                  // navigate to profile page
+                  Navigator.pushNamed(context, '/stream');
                 },
               ),
             ),
