@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+//import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -115,9 +115,9 @@ class _CameraStreamPageState extends State<CameraStreamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Camera Stream')),
+      appBar: AppBar(title: const  Text('Camera Stream')),
       body: _controller == null
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : CameraPreview(_controller!),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
