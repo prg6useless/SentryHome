@@ -16,7 +16,7 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(milliseconds: 500), (_) {
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       _fetchFrame();
     });
   }
@@ -56,13 +56,13 @@ class _VideoFeedPageState extends State<VideoFeedPage> {
       ),
       body: Center(
         child: _isError
-            ? Text(
+            ? const Text(
                 'No Feed',
                 style: TextStyle(fontSize: 24.0),
               )
             : _imageBytes != null
                 ? Image.memory(_imageBytes)
-                : CircularProgressIndicator(),
+                :const CircularProgressIndicator(),
       ),
     );
   }
