@@ -21,7 +21,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     super.initState();
     print(widget.videoName);
     _controller = VideoPlayerController.network(
-        'https://firebasestorage.googleapis.com/v0/b/sentryhome-a95cd.appspot.com/o/20240612_082329_output_video.mp4?alt=media&token=4bacdbb3-1f0b-465f-ab63-100d5332aa4b')
+        'https://firebasestorage.googleapis.com/v0/b/sentryhome-a95cd.appspot.com/o/2024%2006%2016_15%2042%2009_output_video.mp4?alt=media&token=3007d7d0-8cad-415e-91f9-15201ecacbf3')
       ..initialize().then((_) {
         setState(() {});
         _controller.play();

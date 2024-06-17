@@ -21,10 +21,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchVideoList() async {
-    final ListResult result = await FirebaseStorage.instance.ref().list();
-    setState(() {
-      videoList = result.items.map((item) => item.name).toList();
-    });
+    try {
+      final ListResult result = await FirebaseStorage.instance.ref().list();
+      setState(() {
+        videoList = result.items.map((item) => item.name).toList();
+      });
+    } catch (e) {
+      // Handle errors if any
+      print("Error fetching video list: $e");
+    }
+  }
+
+  Future<void> deleteVideo(String videoName) async {
+    try {
+      // Get reference to the video
+      final Reference videoRef =
+          FirebaseStorage.instance.ref().child(videoName);
+      // Delete the video from Firebase Storage
+      await videoRef.delete();
+      // Remove the video from the local list and refresh the UI
+      setState(() {
+        videoList.remove(videoName);
+      });
+    } catch (e) {
+      // Handle errors if any
+      print("Error deleting video: $e");
+    }
+  }
+
+  void refreshPage() {
+    fetchVideoList();
   }
 
   @override
@@ -47,6 +73,14 @@ class _HomePageState extends State<HomePage> {
                 context,
                 MaterialPageRoute(builder: (context) => const QRScannerPage()),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() {
+                refreshPage();
+              });
             },
           ),
         ],
@@ -90,7 +124,6 @@ class _HomePageState extends State<HomePage> {
             color: Colors.black,
           ),
           title: Text(liveView['name']!),
-          // subtitle: Text(liveView['time']!),
           trailing: Icon(
             Icons.circle,
             color: liveView['status'] == "red" ? Colors.red : Colors.green,
@@ -115,15 +148,49 @@ class _HomePageState extends State<HomePage> {
           ),
           title: Text(videoName),
           subtitle: Text("Video"),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              _showDeleteConfirmationDialog(videoName);
+            },
+          ),
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => VideoPlayerPage(videoName: videoName)),
+                builder: (context) => VideoPlayerPage(videoName: videoName),
+              ),
             );
           },
         );
       }).toList(),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(String videoName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Delete Video"),
+          content: Text("Are you sure you want to delete $videoName?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("Delete"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                deleteVideo(videoName);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

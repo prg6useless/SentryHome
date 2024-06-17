@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
               isDarkModeEnabled: _isDarkModeEnabled,
               onDarkModeChanged: _toggleDarkMode,
             ),
-        '/notifications': (context) => const NotificationsPage(),
+        '/notifications': (context) => NotificationsPage(),
         "/stream": (context) => CameraStreamPage(),
         "/view": (context) => VideoFeedPage(),
         '/qrscanner': (context) => const QRScannerPage(),
