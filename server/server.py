@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from io import BytesIO
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import StreamingResponse, HTMLResponse
@@ -12,7 +13,6 @@ import supervision as sv
 import firebase_admin
 from firebase_admin import credentials, storage, firestore
 import os
-from io import BytesIO
 import uuid
 
 app = FastAPI()
@@ -21,6 +21,7 @@ frame = None
 video_writer = None
 output_filename = 'output_video.mp4'
 video_writer_initialized = False
+settinigs = False  # Default setting for motion detection
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,49 +54,79 @@ category_dict = {
 }
 
 # Initialize Firebase Admin SDK
-# Path to your downloaded JSON key file
 cred = credentials.Certificate("serviceAccountkey.json")
 firebase_admin.initialize_app(cred, {
-    # Replace with your Firebase project ID
     'storageBucket': 'sentryhome-a95cd.appspot.com'
 })
 
 db = firestore.client()
 
 
+async def update_motion_detection_setting():
+    global settinigs
+    while True:
+        usersetting_ref = db.collection(
+            "Users").document("admin@gmail.com").get()
+        if usersetting_ref.exists:
+            data = usersetting_ref.to_dict()
+            # Default to False if setting is missing
+            settinigs = data.get('motionDetectionEnabled', False)
+            print(f"Motion detection setting updated: {settinigs}")
+        await asyncio.sleep(10)  # Check every 60 seconds
+
+# Start the background task
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(update_motion_detection_setting())
+
+
+# Global variable to store the last logged timestamp
+last_logged_timestamp = None
+
+
 def save_detection_event(class_id, confidence, frame):
+    global last_logged_timestamp
+
     if class_id in [0, 3, 7]:  # person, motorcycle, truck
-        timestamp = datetime.now().isoformat()
-        # Generate a unique ID for the event and image
-        unique_id = str(uuid.uuid4())
+        current_timestamp = datetime.now()
 
-        # Create a filename for the image
-        image_filename = f"detection_{unique_id}.jpg"
+        # Check if last_logged_timestamp is initialized and calculate time difference
+        if last_logged_timestamp:
+            time_diff = (current_timestamp -
+                         last_logged_timestamp).total_seconds()
+        else:
+            # Set initial diff to infinity to always log first event
+            time_diff = float('inf')
 
-        # Convert the frame to a byte stream
-        _, image_encoded = cv2.imencode('.jpg', frame)
-        image_stream = BytesIO(image_encoded)
+        # Log the event if time difference is at least 30 seconds
+        if time_diff >= 30:
+            unique_id = str(uuid.uuid4())
+            image_filename = f"detection_{unique_id}.jpg"
+            _, image_encoded = cv2.imencode('.jpg', frame)
+            image_stream = BytesIO(image_encoded)
 
-        # Upload the image to Firebase Storage in the specified subdirectory
-        bucket = storage.bucket()
-        blob = bucket.blob(f'detection_images/{image_filename}')
-        blob.upload_from_file(image_stream, content_type='image/jpeg')
-        blob.make_public()  # Make the image public
+            bucket = storage.bucket()
+            blob = bucket.blob(f'detection_images/{image_filename}')
+            blob.upload_from_file(image_stream, content_type='image/jpeg')
+            blob.make_public()
 
-        # Get the public URL of the image
-        image_url = blob.public_url
+            image_url = blob.public_url
 
-        # Event data to save in Firestore
-        event_data = {
-            'object': category_dict[class_id],
-            'timestamp': timestamp,
-            'image_url': image_url
-        }
+            event_data = {
+                'object': category_dict.get(class_id, 'unknown'),
+                'timestamp': current_timestamp.isoformat(),
+                'image_url': image_url
+            }
 
-        # Save the event to Firestore with a unique ID
-        print(event_data)
-        db.collection('detection_events').document(unique_id).set(event_data)
-        print(f"Saved event: {event_data} with ID {unique_id}")
+            print(event_data)
+            db.collection('detection_events').document(
+                unique_id).set(event_data)
+            print(f"Saved event: {event_data} with ID {unique_id}")
+
+            # Update last_logged_timestamp to current timestamp
+            last_logged_timestamp = current_timestamp
 
 
 def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
@@ -105,13 +136,11 @@ def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
     label_annotator = sv.LabelAnnotator()
 
     labels = [
-        f"{category_dict[class_id]} {confidence:.2f}"
+        f"{category_dict.get(class_id, 'unknown')} {confidence:.2f}"
         for class_id, confidence in zip(detections.class_id, detections.confidence)
     ]
 
-    # Log detection events and upload image to Firebase Storage
     for class_id, confidence in zip(detections.class_id, detections.confidence):
-        # Pass image to save the annotated frame
         save_detection_event(class_id, confidence, image)
 
     annotated_image = bounding_box_annotator.annotate(
@@ -121,11 +150,6 @@ def process_frame_with_detection(image: np.ndarray) -> np.ndarray:
     return annotated_image
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
 @app.post("/stream")
 async def stream(request: Request, background_tasks: BackgroundTasks):
     global frame, video_writer, video_writer_initialized
@@ -133,18 +157,19 @@ async def stream(request: Request, background_tasks: BackgroundTasks):
     contents = await request.body()
     nparr = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    annotated_frame = process_frame_with_detection(frame)
-    frame = annotated_frame
+
+    if settinigs:
+        annotated_frame = process_frame_with_detection(frame)
+        frame = annotated_frame
+
     if frame is not None:
-        # Initialize video writer if it's not yet initialized
         if not video_writer_initialized:
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for mp4
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             frame_height, frame_width = frame.shape[:2]
             video_writer = cv2.VideoWriter(
                 output_filename, fourcc, 5.0, (frame_width, frame_height))
             video_writer_initialized = True
 
-        # Write the current frame to the video file
         video_writer.write(frame)
 
     return {"message": "Frame received"}
@@ -166,9 +191,8 @@ def generate_video_stream():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame.tobytes() + b'\r\n')
         else:
-            # Send a red frame if no frame is available
             red_frame = np.zeros((480, 640, 3), dtype=np.uint8)
-            red_frame[:] = (0, 0, 255)  # Red color in BGR
+            red_frame[:] = (0, 0, 255)
             frame_with_timestamp = add_timestamp_to_frame(red_frame)
             _, encoded_frame = cv2.imencode('.jpg', frame_with_timestamp)
             yield (b'--frame\r\n'
@@ -213,7 +237,7 @@ def shutdown_event():
     if video_writer is not None:
         video_writer.release()
         # Create a new filename with timestamp
-        timestamped_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{
+        timestamped_filename = f"{datetime.now().strftime('%Y %m %d_%H %M %S')}_{
             output_filename}"
         # Upload to Firebase Storage
         bucket = storage.bucket()
